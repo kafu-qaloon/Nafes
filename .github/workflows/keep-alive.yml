@@ -1,0 +1,25 @@
+# يبقي قاعدة بيانات الورشة (Supabase) نشطة حتى لا تتوقف بسبب قلة الاستخدام.
+# يقرأ فقط (يبحث عن رقم مشاركة غير موجود)، ولا يضيف أو يغيّر أي بيانات.
+name: إبقاء قاعدة البيانات نشطة
+
+on:
+  schedule:
+    - cron: "17 6 */2 * *"   # كل يومين
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: زيارة قاعدة البيانات
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "https://aqlxkcclfrxsjntcwwqz.supabase.co/rest/v1/rpc/nafes_load" \
+            -H "apikey: sb_publishable_Dfv-H0tHvyKafUR-xu_qqg_ZStQsxN5" \
+            -H "Content-Type: application/json" \
+            -d '{"p_code":"NF-KEEP-ALIVE"}')
+          echo "HTTP $code"
+          test "$code" = "200"
